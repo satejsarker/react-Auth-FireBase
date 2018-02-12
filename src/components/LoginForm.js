@@ -1,12 +1,55 @@
 import React, { Component } from 'react';
+import { Text } from 'react-native';
+import firebase from 'firebase';
 
-import { Card, CardSection, Button, Input } from './common';
+import { Card, CardSection, Button, Input, Spinner } from './common';
 
 class LoginForm extends Component {
     state={
         email: '',
-        password:''
+        password: '',
+        error: '',
+        loading: false
     };
+    onButtonPress() {
+        this.setState({ error: '', loading: true });
+
+        const { email, password } = this.state;
+            firebase.auth().signInWithEmailAndPassword(email, password)
+            .then(this.onLoginSuccess.bind(this))
+            .catch(() => {
+                firebase.auth().createUserWithEmailAndPassword(email, password)
+                    .then(this.onLoginSuccess.bind(this)) 
+                .catch(() => {
+                    this.onLoginFail.bind(this);
+                });
+            });
+    }
+    onLoginFail() {
+        this.setState({ error: 'Authentication Faild.',
+    loading: false,
+
+ }); 
+    }
+    onLoginSuccess() {
+        this.setState({
+            email: '',
+            password: '',
+            loading: false,
+            error: '' 
+        });
+    }
+        renderButton() {
+            if (this.state.loading) {
+                return <Spinner size='small' />;
+            }
+            return (
+                <Button onPress={this.onButtonPress.bind(this)} >
+                    Log In
+                </Button>
+            );
+        }
+
   render() {
       return (
      <Card>
@@ -29,11 +72,11 @@ class LoginForm extends Component {
                     onChangeText={password => this.setState({ password })}
                  />
                  </CardSection>
-         
+         <Text style={styles.errorTextStyle} >
+            {this.state.error}
+         </Text>
          <CardSection >
-                <Button>
-                    Log In 
-                </Button>
+              {this.renderButton()}
             </CardSection>
      </Card>
 
@@ -41,6 +84,12 @@ class LoginForm extends Component {
       );
   }  
 }
-
+const styles = {
+    errorTextStyle: {
+        fontSize: 20,
+        alignSelf: 'center',
+        color: 'red'
+    }
+};
 
 export default LoginForm;
