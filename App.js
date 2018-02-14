@@ -9,13 +9,14 @@ import firebase from 'firebase';
 import React, { Component } from 'react';
 import {
   StyleSheet,
-  Text,
   View
 } from 'react-native';
-import { Header } from './src/components/common';
+
+import { Header, Button, Spinner } from './src/components/common';
 
 
 export default class App extends Component {
+  state={ loggedIn: null };
   componentWillMount() {
       firebase.initializeApp(
         {
@@ -25,18 +26,35 @@ export default class App extends Component {
           projectId: 'auth-46497',
           storageBucket: 'auth-46497.appspot.com',
           messagingSenderId: '114887766240'
-        }
-      );
+        });
+        firebase.auth().onAuthStateChanged((user) => {
+          if (user) {
+            this.setState({ loggedIn: true });
+          } else {
+            this.setState({ loggedIn: false });
+          }
+        });
+}
+renderContain() {
+  switch (this.state.loggedIn) {
+    case true:
+      return <Button> Log Out</Button>;
+    case false:
+    return <LoginForm />;
+  
+    default:
+     return <Spinner size="large" />;
   }
+  }
+
+
   render() {
     return (
       <View >
-        <Header HeaderText='Firebase Login ' />
-        <LoginForm />
-        <Text style={styles.welcome}>
-          Welcome to Firebase Login
-        </Text>
-      
+        <Header HeaderText='Firebase Login' />
+        <View style={{ position: 'absolute', top: 100, left: 0, right: 0, bottom: 30, justifyContent: 'center', alignItems: 'center' }}>
+      {this.renderContain()}
+      </View>
       </View>
     );
   }
@@ -44,10 +62,10 @@ export default class App extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: 'red',
   },
   welcome: {
     fontSize: 20,
